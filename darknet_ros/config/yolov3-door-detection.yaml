@@ -1,9 +1,9 @@
 yolo_model:
 
   config_file:
-    name: yolov3-door-detection.cfg
+    name: yolov3-tiny-door-detection.cfg
   weight_file:
-    name: yolov3-door-detection.weights
+    name: yolov3-tiny-door-detection.weights
   threshold:
     value: 0.3
   detection_classes:
