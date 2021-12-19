@@ -60,19 +60,13 @@ The model configure is defined in
 In addition, the [config file](darknet_ros/config/yolov3-door-detection.yaml) for ROS defines the names of the detection objects, in our case is "door" only.
 
 
-### Unit Tests
+### Launch Landmark Detection
+Run:
 
-Run the unit tests using the [Catkin Command Line Tools](http://catkin-tools.readthedocs.io/en/latest/index.html#)
+    roslaunch darknet_ros darknet_ros.launch
 
-    catkin build darknet_ros --no-deps --verbose --catkin-make-args run_tests
 
-You will see the image above popping up.
-
-## Basic Usage
-
-In order to get YOLO ROS: Real-Time Object Detection for ROS to run with your robot, you will need to adapt a few parameters. It is the easiest if duplicate and adapt all the parameter files that you need to change from the `darknet_ros` package. These are specifically the parameter files in `config` and the launch file from the `launch` folder.
-
-## Nodes
+## Useful Information on Darknet_ros Nodes
 
 ### Node: darknet_ros
 
