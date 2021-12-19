@@ -1,54 +1,15 @@
-# YOLO ROS: Real-Time Object Detection for ROS
+# Real-Time Indoor Landmark Detection
 
 ## Overview
 
-This is a ROS package developed for **object detection in camera images**. You only look once (YOLO) is a state-of-the-art, real-time object detection system. In the following ROS package you are able to use **YOLO (V3) on GPU and CPU**. The pre-trained model of the convolutional neural network is able to detect pre-trained classes including the data set from VOC and COCO, or you can also create a network with your own detection objects. For more information about YOLO, Darknet, available training data and training YOLO see the following link: [YOLO: Real-Time Object Detection](http://pjreddie.com/darknet/yolo/).
+This is the **Indoor Landmark Detection** module for F1tenth racecar navigation which heavily adapted from [YOLO: Real-Time Object Detection](http://pjreddie.com/darknet/yolo/).
 
-The YOLO packages have been tested under **ROS Noetic** and **Ubuntu 20.04**. Note: We also provide branches that work under **ROS Melodic**, **ROS Foxy** and **ROS2**.
+![Darknet Ros example: Detection image](darknet_ros/doc/localize_w_landmark.gif)
 
-This is research code, expect that it changes often and any fitness for a particular purpose is disclaimed.
+The trained YOLO model can classify indoor objects(currently doors only but can be generalized to more classes with more labeled data), and has an overall accuracy(validation) > 95%. With the tiny sized model, the detection frame rate can reach >15 fps onboard.
 
-**Author: [Marko Bjelonic](https://www.markobjelonic.com), marko.bjelonic@mavt.ethz.ch**
-
-**Affiliation: [Robotic Systems Lab](http://www.rsl.ethz.ch/), ETH Zurich**
-
-![Darknet Ros example: Detection image](darknet_ros/doc/test_detection.png)
-![Darknet Ros example: Detection image](darknet_ros/doc/test_detection_anymal.png)
-
-Based on the [Pascal VOC](https://pjreddie.com/projects/pascal-voc-dataset-mirror/) 2012 dataset, YOLO can detect the 20 Pascal object classes:
-
-- person
-- bird, cat, cow, dog, horse, sheep
-- aeroplane, bicycle, boat, bus, car, motorbike, train
-- bottle, chair, dining table, potted plant, sofa, tv/monitor
-
-Based on the [COCO](http://cocodataset.org/#home) dataset, YOLO can detect the 80 COCO object classes:
-
-- person
-- bicycle, car, motorbike, aeroplane, bus, train, truck, boat
-- traffic light, fire hydrant, stop sign, parking meter, bench
-- cat, dog, horse, sheep, cow, elephant, bear, zebra, giraffe
-- backpack, umbrella, handbag, tie, suitcase, frisbee, skis, snowboard, sports ball, kite, baseball bat, baseball glove, skateboard, surfboard, tennis racket
-- bottle, wine glass, cup, fork, knife, spoon, bowl
-- banana, apple, sandwich, orange, broccoli, carrot, hot dog, pizza, donut, cake
-- chair, sofa, pottedplant, bed, diningtable, toilet, tvmonitor, laptop, mouse, remote, keyboard, cell phone, microwave, oven, toaster, sink, refrigerator, book, clock, vase, scissors, teddy bear, hair drier, toothbrush
-
-## Citing
-
-The YOLO methods used in this software are described in the paper: [You Only Look Once: Unified, Real-Time Object Detection](https://arxiv.org/abs/1506.02640).
-
-If you are using YOLO V3 for ROS, please add the following citation to your publication:
-
-M. Bjelonic
-**"YOLO ROS: Real-Time Object Detection for ROS"**,
-URL: https://github.com/leggedrobotics/darknet_ros, 2018.
-
-    @misc{bjelonicYolo2018,
-      author = {Marko Bjelonic},
-      title = {{YOLO ROS}: Real-Time Object Detection for {ROS}},
-      howpublished = {\url{https://github.com/leggedrobotics/darknet_ros}},
-      year = {2016--2018},
-    }
+## Fine Tuning
+Pre-trained YOLO models are trained using datasets taken from human's perspective and outdoors, such as COCO. However in our case, the landmarks to be detected are indoor architectural objects, such as doors, windows, floors, chairs and tables, etc. Thus, we need to fine tuning some pretrained YOLO model with customized dataset to achieve high accuracy. This [jupyter notebook](https://colab.research.google.com/drive/17xMqGVzHqhNtDBl2TepkhG_1YKyp9wmQ?usp=sharing) is written for fine tuning and you may find this [blog](https://eng-memo.info/blog/yolo-original-dataset-en/) also very useful.
 
 ## Installation
 
@@ -85,40 +46,19 @@ This means that you need to check the compute capability (version) of your GPU. 
 
     -O3 -gencode arch=compute_62,code=sm_62
 
-### Download weights
 
-The yolo-voc.weights and tiny-yolo-voc.weights are downloaded automatically in the CMakeLists.txt file. If you need to download them again, go into the weights folder and download the two pre-trained weights from the COCO data set:
+### Customize detection objects
 
-    cd catkin_workspace/src/darknet_ros/darknet_ros/yolo_network_config/weights/
-    wget http://pjreddie.com/media/files/yolov2.weights
-    wget http://pjreddie.com/media/files/yolov2-tiny.weights
-
-And weights from the VOC data set can be found here:
-
-    wget http://pjreddie.com/media/files/yolov2-voc.weights
-    wget http://pjreddie.com/media/files/yolov2-tiny-voc.weights
-
-And the pre-trained weight from YOLO v3 can be found here:
-
-    wget http://pjreddie.com/media/files/yolov3-tiny.weights
-    wget http://pjreddie.com/media/files/yolov3.weights
-
-There are more pre-trained weights from different data sets reported [here](https://pjreddie.com/darknet/yolo/).
-
-### Use your own detection objects
-
-In order to use your own detection objects you need to provide your weights and your cfg file inside the directories:
+Download the fine-tuned [weights](https://drive.google.com/file/d/18OIE-rE096ekzOGO3TAP2lR8XmVo-lTX/view?usp=sharing) and copy it under directory:
 
     catkin_workspace/src/darknet_ros/darknet_ros/yolo_network_config/weights/
-    catkin_workspace/src/darknet_ros/darknet_ros/yolo_network_config/cfg/
 
-In addition, you need to create your config file for ROS where you define the names of the detection objects. You need to include it inside:
+The model configure is defined in
 
-    catkin_workspace/src/darknet_ros/darknet_ros/config/
+    catkin_workspace/src/darknet_ros/darknet_ros/yolo_network_config/cfg/yolov3-tiny-door-detection.cfg
 
-Then in the launch file you have to point to your new config file in the line:
+In addition, the [config file](darknet_ros/config/yolov3-door-detection.yaml) for ROS defines the names of the detection objects, in our case is "door" only.
 
-    <rosparam command="load" ns="darknet_ros" file="$(find darknet_ros)/config/your_config_file.yaml"/>
 
 ### Unit Tests
 
