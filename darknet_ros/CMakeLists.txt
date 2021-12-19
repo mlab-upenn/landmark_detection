@@ -13,18 +13,40 @@ find_path(DARKNET_PATH
 message(STATUS "Darknet path dir = ${DARKNET_PATH}")
 add_definitions(-DDARKNET_FILE_PATH="${DARKNET_PATH}")
 
+EXECUTE_PROCESS( COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE ARCHITECTURE )
+message( STATUS "System architecture: ${ARCHITECTURE}" )
+
 # Find CUDA
 find_package(CUDA QUIET)
 if (CUDA_FOUND)
   find_package(CUDA REQUIRED)
   message(STATUS "CUDA Version: ${CUDA_VERSION_STRINGS}")
   message(STATUS "CUDA Libararies: ${CUDA_LIBRARIES}")
-  set(
-    CUDA_NVCC_FLAGS
-    ${CUDA_NVCC_FLAGS};
-    -O3
-    -gencode arch=compute_50,code=[sm_50,compute_50]
-  )
+  if (${ARCHITECTURE} STREQUAL "aarch64")
+    set(
+      CUDA_NVCC_FLAGS
+      ${CUDA_NVCC_FLAGS};
+      -O3
+      -gencode arch=compute_72,code=[sm_72,compute_72]
+    )
+    message(STATUS "Using CUDA computability: 7.2")
+  elseif(${ARCHITECTURE} STREQUAL "x86_64")
+    set(
+      CUDA_NVCC_FLAGS
+      ${CUDA_NVCC_FLAGS};
+      -O3
+      -gencode arch=compute_75,code=[sm_75,compute_75]
+    )
+    message(STATUS "Using CUDA computability: 7.5")
+  else()
+    set(
+      CUDA_NVCC_FLAGS
+      ${CUDA_NVCC_FLAGS};
+      -O3
+      -gencode arch=compute_50,code=[sm_50,compute_50]
+    )
+    message(STATUS "Using CUDA computability: 5.0")
+  endif()
   add_definitions(-DGPU)
 else()
   list(APPEND LIBRARIES "m")
@@ -211,10 +233,25 @@ install(TARGETS ${PROJECT_NAME}
 install(
   DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
+  FILES_MATCHING 
+  PATTERN "*.h"
+  PATTERN "*.hpp"
+)
+
+install(
+  DIRECTORY ${DARKNET_PATH}
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING 
+  PATTERN "*.h"
+  PATTERN "*.hpp"
 )
 
 install(DIRECTORY config launch yolo_network_config
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
+install(FILES
+  nodelet_plugins.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
